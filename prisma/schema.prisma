@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(cuid())
+  clerkId          String            @unique
+  email            String            @unique
+  role             Role              @default(CANDIDATE)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  candidateProfile CandidateProfile?
+  recruiterProfile RecruiterProfile?
+}
+
+model Company {
+  id                String             @id @default(cuid())
+  name              String
+  description       String?
+  industry          String?
+  website           String?
+  logoUrl           String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  jobPostings       JobPosting[]
+  recruiterProfiles RecruiterProfile[]
+}
+
+model RecruiterProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  companyId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  company   Company  @relation(fields: [companyId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model JobPosting {
+  id           String        @id @default(cuid())
+  title        String
+  description  String
+  requirements String
+  companyId    String
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
+  company      Company       @relation(fields: [companyId], references: [id])
+}
+
+model CandidateProfile {
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  resumeText        String?
+  resumeDocumentUrl String?
+  lastResumeUpdate  DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  applications      Application[]
+  user              User              @relation(fields: [userId], references: [id])
+  interviewResults  InterviewResult[]
+}
+
+model Application {
+  id                String            @id @default(cuid())
+  candidateId       String
+  jobPostingId      String
+  status            ApplicationStatus @default(APPLIED)
+  appliedAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  interviewResultId String?           @unique
+  candidate         CandidateProfile  @relation(fields: [candidateId], references: [id])
+  jobPosting        JobPosting        @relation(fields: [jobPostingId], references: [id])
+  interviewResult   InterviewResult?
+}
+
+model InterviewResult {
+  id                 String               @id @default(cuid())
+  applicationId      String?              @unique
+  candidateProfileId String?
+  sessionType        InterviewSessionType
+  transcript         String
+  aiFeedback         String
+  score              Float
+  vapiCallId         String               @unique
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  application        Application?         @relation(fields: [applicationId], references: [id])
+  candidateProfile   CandidateProfile?    @relation(fields: [candidateProfileId], references: [id])
+
+  @@index([candidateProfileId])
+}
+
+enum Role {
+  CANDIDATE
+  RECRUITER
+}
+
+enum ApplicationStatus {
+  APPLIED
+  INTERVIEW_SCHEDULED
+  AI_SCREENING_COMPLETE
+  REVIEWED_BY_RECRUITER
+  OFFERED
+  REJECTED
+}
+
+enum InterviewSessionType {
+  PRACTICE
+  APPLICATION
+}

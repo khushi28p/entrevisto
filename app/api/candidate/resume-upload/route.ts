@@ -2,15 +2,19 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { Role } from '@prisma/client';
+import * as pdfjsLib from "pdfjs-dist";
+import * as pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 // CRITICAL FIX: Use 'require' and cast to 'any' for reliable CJS interop 
 // The dynamic import was causing persistent compilation errors due to conflicting module resolutions.
-const pdfParser = require('pdf-parse');
+import {PDFParse} from 'pdf-parse'
 
 // Set the config for Next.js to parse the request body as form data
 export const config = {
   api: {
     // This setting tells Next.js not to handle the body automatically, 
-    // allowing req.formData() to work correctly.
+    // allowing req.formData() to worapk correctly.
     bodyParser: false, 
   },
 };
@@ -50,14 +54,14 @@ export async function POST(req: Request) {
 
     // 4. Read File Content into Buffer
     // Convert the Web File API Blob/File into an ArrayBuffer, then into a Node.js Buffer
-    const fileArrayBuffer = await file.arrayBuffer();
-    const fileBuffer = Buffer.from(fileArrayBuffer);
+    const arrayBuffer = await file.arrayBuffer();
+const uint8Array = new Uint8Array(arrayBuffer);
     
     // 5. Parse PDF Text Content - using the required pdfParser
-    let resumeText = '';
+    let resumeText = "";
     try {
-        const data = await pdfParser(fileBuffer);
-        resumeText = data.text;
+        const data = new PDFParse(uint8Array);
+        resumeText =(await data.getText()).text;
     } catch (parseError) {
         // CRITICAL LOGGING ADDED HERE: Report exactly what the parser said
         console.error('PDF Parsing Failed:', (parseError as Error).message);

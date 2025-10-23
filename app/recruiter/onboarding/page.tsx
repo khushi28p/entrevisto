@@ -65,7 +65,7 @@ const FormInput = ({ label, id, value, onChange, placeholder, icon: Icon, type =
 
 export default function RecruiterOnboardingPage() {
   const router = useRouter();
-  const { isLoaded, user } = useUser();
+  const { isLoaded} = useUser();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({

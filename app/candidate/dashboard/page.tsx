@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { Role } from '@prisma/client';
-import { Briefcase, BrainCircuit, Users, ChevronRight, Loader2 } from 'lucide-react';
+import { Briefcase, BrainCircuit, Users, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 // Component for a simple Job Listing card
@@ -113,7 +113,7 @@ export default async function CandidateDashboardPage() {
     orderBy: { createdAt: 'desc' },
   });
   
-  const hasResume = !!user.candidateProfile?.resumeText;
+  // const hasResume = !!user.candidateProfile?.resumeText;
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-8 font-sans">

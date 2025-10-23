@@ -96,6 +96,7 @@ export default function NewJobPostingPage() {
            setCompanyName("Your Company"); 
         }
       } catch (e) {
+        console.log('Error fetching company info:', e);
         setCompanyName("Your Company");
       }
     };

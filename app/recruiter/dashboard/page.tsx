@@ -1,8 +1,8 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { Role } from '@prisma/client';
-import { Briefcase, Building, ListChecks, Users, Plus, Loader2 } from 'lucide-react';
+import { Briefcase, Building, ListChecks, Users, Plus} from 'lucide-react';
 import Link from 'next/link';
 
 // Helper function to format currency or numbers

@@ -40,7 +40,7 @@ const ThemeButton = ({ children, onClick, disabled, loading, className = '' }: {
 
 export default function CandidatePracticePage() {
   const router = useRouter();
-  const { isLoaded, userId } = useAuth();
+  const { isLoaded } = useAuth();
   
   // State for the uploaded file and status
   const [resumeFile, setResumeFile] = useState<File | null>(null);

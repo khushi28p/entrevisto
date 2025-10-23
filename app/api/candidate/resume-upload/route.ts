@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { Role } from '@prisma/client';
 // CRITICAL FIX: Use 'require' and cast to 'any' for reliable CJS interop 
 // The dynamic import was causing persistent compilation errors due to conflicting module resolutions.
-const pdfParser = require('pdf-parse');
+import {PDFParse} from 'pdf-parse'
 
 // Set the config for Next.js to parse the request body as form data
 export const config = {
@@ -56,8 +56,8 @@ export async function POST(req: Request) {
     // 5. Parse PDF Text Content - using the required pdfParser
     let resumeText = '';
     try {
-        const data = await pdfParser(fileBuffer);
-        resumeText = data.text;
+        const data = new PDFParse(fileBuffer);
+        resumeText = (await data.getText()).text;
     } catch (parseError) {
         // CRITICAL LOGGING ADDED HERE: Report exactly what the parser said
         console.error('PDF Parsing Failed:', (parseError as Error).message);

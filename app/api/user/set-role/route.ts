@@ -133,11 +133,11 @@ export async function POST(req: Request) {
       }, { status: 200 });
     }
 
-  } catch (error: any) {
-    console.error(`Error setting role for user ${clerkId}:`, error);
+  } catch (e: unknown) {
+    console.error(`Error setting role for user ${clerkId}:`, e);
     
     // Handle specific Prisma errors
-    if (error.code === 'P2002') {
+    if (e.code === 'P2002') {
       return NextResponse.json(
         {
           success: false,

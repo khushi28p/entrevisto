@@ -133,19 +133,8 @@ export async function POST(req: Request) {
       }, { status: 200 });
     }
 
-  } catch (e: unknown) {
-    console.error(`Error setting role for user ${clerkId}:`, e);
-    
-    // Handle specific Prisma errors
-    if (e.code === 'P2002') {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Profile already exists for this user",
-        },
-        { status: 409 }
-      );
-    }
+  } catch (e) {
+    console.error(`Error setting role for user ${clerkId}:`, e);    
     
     return NextResponse.json(
       {

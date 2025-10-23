@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { Loader2, Briefcase, FileText, CheckCircle, Save } from 'lucide-react';
+import { Loader2, Briefcase, FileText, CheckCircle, Save, BrainCircuit, ListChecks } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 
 // --- Reusable Themed Components (Assuming standard imports or local components) ---

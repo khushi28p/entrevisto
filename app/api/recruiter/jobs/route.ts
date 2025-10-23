@@ -5,7 +5,7 @@ import { Role } from '@prisma/client';
 
 export async function POST(req: Request) {
   // 1. Authentication
-  const { userId: clerkId } = auth();
+  const { userId: clerkId } = await auth();
 
   if (!clerkId) {
     return NextResponse.json({ success: false, message: 'Unauthorized: User not authenticated.' }, { status: 401 });

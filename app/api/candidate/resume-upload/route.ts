@@ -2,19 +2,16 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { Role } from '@prisma/client';
-import * as pdfjsLib from "pdfjs-dist";
-import * as pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-// CRITICAL FIX: Use 'require' and cast to 'any' for reliable CJS interop 
-// The dynamic import was causing persistent compilation errors due to conflicting module resolutions.
-import {PDFParse} from 'pdf-parse'
+import { put } from '@vercel/blob'; // Import Vercel Blob put function
+import {PDFParse} from 'pdf-parse';
+// CRITICAL FIX: Use the new v2 PDFParse destructuring
+// NOTE: V2 often requires the CJS destructuring pattern.
 
 // Set the config for Next.js to parse the request body as form data
 export const config = {
   api: {
     // This setting tells Next.js not to handle the body automatically, 
-    // allowing req.formData() to worapk correctly.
+    // allowing req.formData() to work correctly.
     bodyParser: false, 
   },
 };
@@ -23,17 +20,26 @@ const MAX_FILE_SIZE_MB = 5;
 
 /**
  * Handles the POST request for resume upload.
- * It reads the PDF, parses its text content, and saves it to the CandidateProfile.
+ * It reads the PDF, uploads it to Vercel Blob, parses its text content, 
+ * and saves both the text and the document URL to the CandidateProfile.
  */
 export async function POST(req: Request) {
-  // NOTE: pdfParser is imported using require() above.
-  
   // 1. Authentication
   const { userId: clerkId } = await auth();
 
   if (!clerkId) {
     return NextResponse.json({ success: false, message: 'Unauthorized: User not authenticated.' }, { status: 401 });
   }
+  
+  // Vercel Blob Token check
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error('BLOB_READ_WRITE_TOKEN is missing!');
+      return NextResponse.json({ success: false, message: 'Server configuration error: Blob storage not configured.' }, { status: 500 });
+  }
+
+
+  let fileUrl: string | null = null;
+  let resumeText = '';
 
   try {
     // 2. Parse Form Data
@@ -53,21 +59,28 @@ export async function POST(req: Request) {
     }
 
     // 4. Read File Content into Buffer
-    // Convert the Web File API Blob/File into an ArrayBuffer, then into a Node.js Buffer
-    const arrayBuffer = await file.arrayBuffer();
-const uint8Array = new Uint8Array(arrayBuffer);
+    const fileArrayBuffer = await file.arrayBuffer();
+    const fileBuffer = Buffer.from(fileArrayBuffer);
     
-    // 5. Parse PDF Text Content - using the required pdfParser
-    let resumeText = "";
+    // 5. Upload File to Vercel Blob
+    const filename = `${clerkId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const blob = await put(filename, fileBuffer, {
+        access: 'public', // Set access level appropriate for your use case
+    });
+    fileUrl = blob.url;
+
+
+    // 6. Parse PDF Text Content - using the new v2 PDFParse class
     try {
-        const data = new PDFParse(uint8Array);
-        resumeText =(await data.getText()).text;
+        // Initialize PDFParse with the buffer option (v2 standard)
+        const parser = new PDFParse({ buffer: fileBuffer });
+        const data = await parser.getText(); 
+        resumeText = data.text;
     } catch (parseError) {
-        // CRITICAL LOGGING ADDED HERE: Report exactly what the parser said
         console.error('PDF Parsing Failed:', (parseError as Error).message);
         return NextResponse.json({ 
             success: false, 
-            message: 'Failed to extract text from PDF. Is your resume text-selectable?' 
+            message: 'Failed to extract text from PDF. Ensure your resume is text-selectable.' 
         }, { status: 400 });
     }
     
@@ -75,7 +88,7 @@ const uint8Array = new Uint8Array(arrayBuffer);
         return NextResponse.json({ success: false, message: 'Parsed resume text is too short. Please ensure your PDF is correctly formatted and contains enough content.' }, { status: 400 });
     }
 
-    // 6. Authorize and Find Profile
+    // 7. Authorize and Find Profile
     const user = await prisma.user.findUnique({
         where: { clerkId },
         select: { 
@@ -91,20 +104,22 @@ const uint8Array = new Uint8Array(arrayBuffer);
     
     const candidateProfileId = user.candidateProfile.id;
     
-    // 7. Save Text to CandidateProfile
+    // 8. Save Text and URL to CandidateProfile
     await prisma.candidateProfile.update({
         where: { id: candidateProfileId },
         data: {
             resumeText: resumeText,
+            resumeDocumentUrl: fileUrl, // Save the Vercel Blob URL
             lastResumeUpdate: new Date(),
         },
     });
 
-    // 8. Success Response
+    // 9. Success Response
     return NextResponse.json({ 
       success: true, 
-      message: 'Resume analyzed and saved successfully.',
-      textLength: resumeText.length
+      message: 'Resume uploaded, analyzed, and saved successfully.',
+      textLength: resumeText.length,
+      fileUrl: fileUrl
     }, { status: 200 });
 
   } catch (error) {

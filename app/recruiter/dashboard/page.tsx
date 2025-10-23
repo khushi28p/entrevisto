@@ -54,7 +54,7 @@ const JobPostingCard = ({ job }: {
 
 
 export default async function RecruiterDashboardPage() {
-  const { userId: clerkId } = auth();
+  const { userId: clerkId } = await auth();
 
   if (!clerkId) {
     // Should not happen if middleware is set up correctly, but handle gracefully
@@ -157,7 +157,7 @@ export default async function RecruiterDashboardPage() {
             <div className="text-center p-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg">
               <Briefcase className="h-10 w-10 mx-auto text-primary/50 mb-3" />
               <p className="text-lg font-medium">No job postings found for {company.name}.</p>
-              <p className="text-sm mt-1">Click "New Job" to start screening candidates with AI.</p>
+              <p className="text-sm mt-1">Click New Job to start screening candidates with AI.</p>
             </div>
           )}
         </section>

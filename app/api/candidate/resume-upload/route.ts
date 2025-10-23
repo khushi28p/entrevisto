@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     // 6. Parse PDF Text Content - using the new v2 PDFParse class
     try {
         // Initialize PDFParse with the buffer option (v2 standard)
-        const parser = new PDFParse({ buffer: fileBuffer });
+        const parser = new PDFParse({ url: `${fileBuffer}` });
         const data = await parser.getText(); 
         resumeText = data.text;
     } catch (parseError) {

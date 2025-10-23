@@ -112,6 +112,7 @@ export default function SelectRolePage() {
         body: JSON.stringify({ role }),
       });
 
+      console.log("response: ", response);
       if (!response.ok) {
         // Handle API errors (e.g., 400 Bad Request, 500 Internal Error)
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));

@@ -3,33 +3,26 @@ import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 
-// Function to handle the POST request from Clerk
 export async function POST(req: Request) {
-  // 1. Get the headers
   const headerPayload = await headers();
   const svixId = headerPayload.get('svix-id');
   const svixTimestamp = headerPayload.get('svix-timestamp');
   const svixSignature = headerPayload.get('svix-signature');
 
-  // 2. If there are missing headers, error out
   if (!svixId || !svixTimestamp || !svixSignature) {
     console.error('Missing Svix headers');
     return new Response('Error: Missing required Svix headers', { status: 400 });
   }
 
-  // 3. Get the body
-  const payload = await req.json();
-  const body = JSON.stringify(payload);
+  const body = await req.text();
 
-  // 4. Get the webhook secret
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.error('CRITICAL: CLERK_WEBHOOK_SECRET is not set.');
+    console.error('CRITICAL: CLERK_WEBHOOK_SECRET is not set');
     return new Response('Error: Server configuration error', { status: 500 });
   }
 
-  // 5. Create a new Svix instance and verify the payload
   let event: WebhookEvent;
   try {
     const wh = new Webhook(webhookSecret);
@@ -39,46 +32,66 @@ export async function POST(req: Request) {
       'svix-signature': svixSignature,
     }) as WebhookEvent;
   } catch (err) {
-    console.error('Webhook verification FAILED. Check CLERK_WEBHOOK_SECRET:', err);
-    return new Response('Error: Webhook verification failed', { status: 403 }); // 403 Forbidden is correct here
+    console.error('Webhook verification FAILED:', err);
+    return new Response('Error: Webhook verification failed', { status: 403 });
   }
   
-  // LOG: Webhook Verified
-  console.log(`Webhook successfully verified for event type: ${event.type}`);
-
-  // 6. Handle the event
   const eventType = event.type;
+  console.log(`Webhook verified: ${eventType}`);
 
-  if (eventType === 'user.created') {
+  // Handle user creation and updates
+  if (eventType === 'user.created' || eventType === 'user.updated') {
     const { id, email_addresses } = event.data;
 
     if (!id || !email_addresses || email_addresses.length === 0) {
-      console.error('Invalid user data received (missing ID or email).');
-      return new Response('Error: Invalid user data received from Clerk', { status: 400 });
+      console.error('Invalid user data received');
+      return new Response('Error: Invalid user data', { status: 400 });
     }
 
     const email = email_addresses[0].email_address;
     
     try {
-      // 7. Attempt to create the User record in the Neon database
-      const user = await prisma.user.create({
-        data: {
-          clerkId: id,
-          email: email,
-          // Role defaults to CANDIDATE
+      const user = await prisma.user.upsert({
+        where: { clerkId: id },
+        update: { email },
+        create: { 
+          clerkId: id, 
+          email,
+          // role defaults to CANDIDATE in your schema
         },
       });
       
-      console.log(`SUCCESS: User created in DB with ID: ${user.id}`);
-      return new Response('User created successfully in database', { status: 200 });
-
+      console.log(`✅ User ${eventType === 'user.created' ? 'created' : 'updated'}: ${user.id}`);
+      return new Response('User synced successfully', { status: 200 });
     } catch (dbError) {
-      // 8. LOG: Database creation failure
-      console.error('CRITICAL DATABASE ERROR: User creation failed. Check DATABASE_URL and Prisma connection.', dbError);
-      return new Response('Database creation failed', { status: 500 });
+      console.error('Database error:', dbError);
+      return new Response('Database operation failed', { status: 500 });
     }
   }
 
-  // Handle other event types if necessary
-  return new Response('Event received, but not handled', { status: 200 });
+  // Handle user deletion
+  if (eventType === 'user.deleted') {
+    const { id } = event.data;
+    
+    if (!id) {
+      console.error('Missing user ID for deletion');
+      return new Response('Error: Missing user ID', { status: 400 });
+    }
+
+    try {
+      await prisma.user.delete({
+        where: { clerkId: id },
+      });
+      
+      console.log(`✅ User deleted: ${id}`);
+      return new Response('User deleted successfully', { status: 200 });
+    } catch (dbError) {
+      console.error('Delete failed:', dbError);
+      // User might not exist, which is fine
+      return new Response('User deletion completed', { status: 200 });
+    }
+  }
+
+  console.log('Event received but not handled');
+  return new Response('Event received', { status: 200 });
 }

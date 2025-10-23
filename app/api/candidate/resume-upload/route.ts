@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import { Role } from '@prisma/client';
-// NOTE: Ensure you have installed this package: npm install pdf-parse
-import pdf from 'pdf-parse';
+// NOTE: We will dynamically import pdf-parse inside the POST function to fix the default export issue.
+// import pdf from 'pdf-parse'; // REMOVED THIS LINE
 
 // Set the config for Next.js to parse the request body as form data
 export const config = {
@@ -19,6 +19,11 @@ const MAX_FILE_SIZE_MB = 5;
  * It reads the PDF, parses its text content, and saves it to the CandidateProfile.
  */
 export async function POST(req: Request) {
+  // Fix: Dynamically import pdf-parse and handle CJS/ESM interop
+  const pdfModule = await import('pdf-parse');
+  // Use the default export if available, otherwise use the module root (common CJS interop fix)
+  const pdfParser = (pdfModule as any).default || pdfModule; 
+  
   // 1. Authentication
   const { userId: clerkId } = await auth();
 
@@ -29,7 +34,8 @@ export async function POST(req: Request) {
   try {
     // 2. Parse Form Data
     const formData = await req.formData();
-    const file = formData.get('resume') as File | null;
+    // File object in Next.js runtime is often mapped to Blob, which satisfies the File type for formData.get()
+    const file = formData.get('resume') as File | null; 
 
     if (!file) {
       return NextResponse.json({ success: false, message: 'Bad Request: Resume file not found in form data.' }, { status: 400 });
@@ -48,8 +54,8 @@ export async function POST(req: Request) {
     const fileArrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(fileArrayBuffer);
     
-    // 5. Parse PDF Text Content
-    const data = await pdf(fileBuffer);
+    // 5. Parse PDF Text Content - using the dynamically imported pdfParser
+    const data = await pdfParser(fileBuffer);
     const resumeText = data.text;
     
     if (resumeText.length < 100) {

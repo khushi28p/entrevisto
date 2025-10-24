@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
     });
     fileUrl = blob.url;
 
-    // Authorize and Find Profile
+    // Authorize and Find User
     const user = await prisma.user.findUnique({
       where: { clerkId },
       select: { 
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (!user || user.role !== Role.CANDIDATE || !user.candidateProfile?.id) {
+    if (!user || user.role !== Role.CANDIDATE) {
       // Cleanup blob
       if (fileUrl) {
         try {
@@ -186,17 +186,22 @@ export async function POST(req: NextRequest) {
       
       return NextResponse.json({ 
         success: false, 
-        message: 'Authorization failed. User must be a Candidate with a profile.' 
+        message: 'Authorization failed. User must be a Candidate.' 
       }, { status: 403 });
     }
     
-    const candidateProfileId = user.candidateProfile.id;
-    const oldResumeUrl = user.candidateProfile.resumeDocumentUrl;
+    const oldResumeUrl = user.candidateProfile?.resumeDocumentUrl;
     
-    // Save to Database
-    await prisma.candidateProfile.update({
-      where: { id: candidateProfileId },
-      data: {
+    // Upsert to Database (creates profile if doesn't exist, updates if it does)
+    await prisma.candidateProfile.upsert({
+      where: { userId: user.id },
+      update: {
+        resumeText: resumeText,
+        resumeDocumentUrl: fileUrl,
+        lastResumeUpdate: new Date(),
+      },
+      create: {
+        userId: user.id,
         resumeText: resumeText,
         resumeDocumentUrl: fileUrl,
         lastResumeUpdate: new Date(),

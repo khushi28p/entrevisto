@@ -7,9 +7,6 @@ import PDFParser from 'pdf2json';
 
 const MAX_FILE_SIZE_MB = 5;
 
-/**
- * Parse PDF buffer to text using pdf2json
- */
 async function parsePdfToText(buffer: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {
     const pdfParser = new PDFParser(null, 1); // null, 1 for better text extraction

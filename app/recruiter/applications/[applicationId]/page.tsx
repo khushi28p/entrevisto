@@ -15,6 +15,7 @@ import {
   Clock,
   Download
 } from "lucide-react";
+import { ApplicationActionButtons } from "@/components/application-action-buttons";
 
 type PageProps = {
   params: Promise<{ applicationId: string }>;
@@ -140,6 +141,9 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
   if (application.jobPosting.company.id !== user.recruiterProfile?.companyId) {
     redirect("/recruiter/dashboard");
   }
+
+  // Check if application is already processed
+  const isProcessed = application.status === 'OFFERED' || application.status === 'REJECTED';
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-8">
@@ -277,30 +281,19 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex items-center space-x-4 pt-4">
-              <form action={`/api/recruiter/applications/${applicationId}`} method="POST">
-                <input type="hidden" name="status" value="OFFERED" />
-                <button
-                  type="submit"
-                  className="flex items-center space-x-2 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors shadow-md"
-                >
-                  <CheckCircle className="h-5 w-5" />
-                  <span className="font-semibold">Accept Candidate</span>
-                </button>
-              </form>
+            {/* Action Buttons - Only show if not already processed */}
+            {!isProcessed && (
+              <ApplicationActionButtons applicationId={applicationId} />
+            )}
 
-              <form action={`/api/recruiter/applications/${applicationId}`} method="POST">
-                <input type="hidden" name="status" value="REJECTED" />
-                <button
-                  type="submit"
-                  className="flex items-center space-x-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md"
-                >
-                  <XCircle className="h-5 w-5" />
-                  <span className="font-semibold">Reject Candidate</span>
-                </button>
-              </form>
-            </div>
+            {/* Show message if already processed */}
+            {isProcessed && (
+              <div className="bg-card border border-border rounded-xl p-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  This application has been {application.status === 'OFFERED' ? 'accepted' : 'rejected'}.
+                </p>
+              </div>
+            )}
 
           </div>
         </div>

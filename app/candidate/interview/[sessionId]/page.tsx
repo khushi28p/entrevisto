@@ -176,7 +176,7 @@ Use only the provided resume and candidate responses for context.
             config={{
               model: {
                 provider: "openai",
-                model: "gpt-4o-realtime-preview-2024-12-17",
+                model: "gpt-realtime-2025-08-28",
                 messages: [
                   {
                     role: "system",
@@ -188,7 +188,7 @@ Use only the provided resume and candidate responses for context.
               firstMessage: "Hello! I'm ready to begin your practice interview. Are you ready to start?",
               voice: {
                 provider: "openai",
-                voiceId: "alloy",
+                voiceId: "cedar",
               },
             }}
           />

@@ -124,8 +124,41 @@ Keep practicing to improve your interview skills!`;
       setCallEnded(true);
 
       // Save interview data if sessionId exists
-      if (sessionId) {
-        await saveInterviewData();
+      if (sessionId && messages.length > 0) {
+        try {
+          console.log("Saving interview data...", { messageCount: messages.length });
+          
+          // Build transcript from messages
+          const transcript = messages
+            .map(msg => `${msg.role === 'assistant' ? 'AI' : 'User'}: ${msg.content}`)
+            .join('\n\n');
+
+          // Generate simple feedback
+          const aiFeedback = generateSimpleFeedback(messages);
+          const score = calculateScore(messages);
+
+          console.log("Sending data to API:", { transcript: transcript.substring(0, 100), score });
+
+          const response = await fetch(`/api/candidate/interview/${sessionId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              vapiCallId: vapiCallId || `call_${Date.now()}`,
+              transcript,
+              aiFeedback,
+              score,
+            }),
+          });
+
+          const result = await response.json();
+          console.log('Interview data save response:', result);
+
+          if (!response.ok) {
+            console.error('Failed to save interview data:', result);
+          }
+        } catch (error) {
+          console.error('Error saving interview data:', error);
+        }
         
         // Redirect after saving data (with delay for user to see "Call ended" message)
         setTimeout(() => {
@@ -184,7 +217,7 @@ Keep practicing to improve your interview skills!`;
         .off("message", handleMessage)
         .off("error", handleError);
     };
-  }, [sessionId, messages, vapiCallId, redirectOnEnd, router]);
+  }, [sessionId, messages, vapiCallId, redirectOnEnd, router]); // Added messages to dependencies
 
   const toggleCall = async () => {
     if (callActive) vapi.stop();

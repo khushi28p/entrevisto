@@ -70,6 +70,9 @@ export async function GET(
         sessionType: session.sessionType,
         resumeText: session.candidateProfile?.resumeText || "",
         vapiCallId: session.vapiCallId,
+        transcript: session.transcript,
+        aiFeedback: session.aiFeedback,
+        score: session.score,
         createdAt: session.createdAt,
       },
     });
@@ -103,6 +106,14 @@ export async function PATCH(
     const { sessionId } = await params;
     const body = await req.json();
     const { vapiCallId, transcript, aiFeedback, score } = body;
+
+    console.log("PATCH /api/candidate/interview received:", {
+      sessionId,
+      vapiCallId,
+      transcriptLength: transcript?.length,
+      feedbackLength: aiFeedback?.length,
+      score,
+    });
 
     // Find user
     const user = await prisma.user.findUnique({
@@ -152,10 +163,23 @@ export async function PATCH(
       },
     });
 
+    console.log("Interview session updated successfully:", {
+      id: updatedSession.id,
+      transcriptLength: updatedSession.transcript.length,
+      feedbackLength: updatedSession.aiFeedback.length,
+      score: updatedSession.score,
+    });
+
     return NextResponse.json({
       success: true,
       message: "Interview session updated successfully",
-      session: updatedSession,
+      session: {
+        id: updatedSession.id,
+        transcript: updatedSession.transcript,
+        aiFeedback: updatedSession.aiFeedback,
+        score: updatedSession.score,
+        vapiCallId: updatedSession.vapiCallId,
+      },
     });
   } catch (error) {
     console.error("Error updating interview session:", error);

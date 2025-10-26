@@ -88,7 +88,7 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { userId: clerkId } = await auth();
 
@@ -100,7 +100,7 @@ export async function PATCH(
   }
 
   try {
-    const { sessionId } = params;
+    const { sessionId } = await params;
     const body = await req.json();
     const { vapiCallId, transcript, aiFeedback, score } = body;
 

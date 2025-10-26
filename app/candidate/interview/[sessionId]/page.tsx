@@ -1,3 +1,5 @@
+// app/candidate/interview/[sessionId]/page.tsx
+
 import VapiWidget from "@/components/vapi-widget";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
@@ -25,7 +27,7 @@ export default async function InterviewPage({ params }: PageProps) {
     redirect("/sign-in");
   }
 
-  // Fetch interview session with candidate profile
+  // Fetch interview session with all related data
   const session = await prisma.interviewResult.findUnique({
     where: { id: sessionId },
     include: {
@@ -33,6 +35,19 @@ export default async function InterviewPage({ params }: PageProps) {
         select: {
           userId: true,
           resumeText: true,
+        },
+      },
+      application: {
+        include: {
+          jobPosting: {
+            include: {
+              company: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -45,10 +60,10 @@ export default async function InterviewPage({ params }: PageProps) {
           <h1 className="text-2xl font-bold text-destructive">Session Not Found</h1>
           <p className="text-muted-foreground">The interview session you're looking for doesn't exist.</p>
           <a
-            href="/candidate/practice"
+            href="/candidate/dashboard"
             className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >
-            Back to Practice
+            Back to Dashboard
           </a>
         </div>
       </div>
@@ -63,10 +78,10 @@ export default async function InterviewPage({ params }: PageProps) {
           <h1 className="text-2xl font-bold text-destructive">Access Denied</h1>
           <p className="text-muted-foreground">You don't have permission to view this session.</p>
           <a
-            href="/candidate/practice"
+            href="/candidate/dashboard"
             className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >
-            Back to Practice
+            Back to Dashboard
           </a>
         </div>
       </div>
@@ -74,11 +89,17 @@ export default async function InterviewPage({ params }: PageProps) {
   }
 
   const resumeText = session.candidateProfile?.resumeText || "No resume available";
+  const isPracticeMode = session.sessionType === "PRACTICE";
+  const isApplicationMode = session.sessionType === "APPLICATION";
 
-  const systemInstruction = `
+  // Build system instruction based on session type
+  let systemInstruction = "";
+
+  if (isPracticeMode) {
+    systemInstruction = `
 # Role & Objective
 You are an AI Interviewer for a hiring platform. 
-Your goal is to conduct a short, context-based interview using the candidate's resume. 
+Your goal is to conduct a short, context-based practice interview using the candidate's resume. 
 You must ask intelligent, tailored questions that reflect the candidate's background and skills.
 Success means completing a focused, friendly, and professional interview in about 2 minutes.
 
@@ -96,20 +117,6 @@ This resume contains the candidate's education, experience, and skills.
 Use it to personalize your questions and conversation. 
 Do not repeat the resume verbatim — interpret it naturally and infer context when needed.
 
-# Reference Pronunciations
-- "Vapi" → "Vaa-pee"
-- "AI" → "Aye-eye"
-- "Resume" → "Reh-zoo-may"
-
-If unclear about any term or name in the resume, politely ask the candidate for clarification.
-
-# Tools
-You have access to:
-- Speech recognition and TTS for real-time interviewing.
-- OpenAI GPT model for reasoning and question generation.
-You cannot browse the internet or access external APIs. 
-Use only the provided resume and candidate responses for context.
-
 # Instructions / Rules
 ✅ DO:
 - Greet the candidate and confirm readiness.
@@ -125,25 +132,80 @@ Use only the provided resume and candidate responses for context.
 - Don't exceed the 2-minute goal.
 
 # Conversation Flow
-1. **Greeting:** Welcome the candidate and confirm readiness.
+1. **Greeting:** Welcome the candidate and confirm readiness for practice.
 2. **Resume-Based Questions:** Ask 2–3 questions about their skills, projects, or experience.
 3. **Follow-Ups:** Ask simple follow-ups to clarify or expand their answers.
-4. **Closing:** Offer short, constructive feedback and thank them for participating.
+4. **Closing:** Offer short, constructive feedback and thank them for practicing.
+`;
+  } else if (isApplicationMode && session.application) {
+    const job = session.application.jobPosting;
+    systemInstruction = `
+# Role & Objective
+You are an AI Interviewer conducting a real job application screening for ${job.company.name}.
+Position: ${job.title}
+Your goal is to assess if the candidate is a good fit for this specific role based on their resume and responses.
+This is a formal interview that will determine if they move forward in the hiring process.
 
-**Example Flow:**
-- "Hi! Nice to meet you! I see you've worked with React and TypeScript — could you tell me about a project where you used them together?"
-- "That sounds great. What was the most challenging part of that project?"
-- "Thank you for sharing that — you explained it really clearly. I appreciate your time today!"
+# Personality & Tone
+- Professional, thorough, and evaluative.
+- Warm but focused — this is a real interview, not practice.
+- Ask probing questions to assess skill fit and cultural alignment.
+- Take notes mentally to provide comprehensive feedback.
 
-# Safety & Escalation
-- If the user seems uncomfortable or unresponsive: 
-  "Would you like to pause or end the interview for now?"
-- If the user goes off-topic:
-  "Let's stay focused on your experience and background for now."
-- If the resume is missing or unclear:
-  "I don't seem to have full details of your background — could you briefly describe your experience?"
-- Always remain polite, calm, and professional, even if the candidate is frustrated or confused.
-  `;
+# Context
+
+**Candidate's Resume:**
+${resumeText}
+
+**Job Position:** ${job.title}
+
+**Job Description:**
+${job.description}
+
+**Key Requirements:**
+${job.requirements}
+
+# Instructions / Rules
+✅ DO:
+- Greet professionally and explain this is the screening interview for ${job.title}.
+- Ask 4-6 targeted questions specifically related to the job requirements.
+- Probe for specific examples and achievements relevant to the role.
+- Assess technical skills, experience level, and cultural fit.
+- Keep the interview between 3-5 minutes.
+- End professionally and inform them they'll receive feedback through the platform.
+
+❌ DON'T:
+- Don't ask about personal or sensitive topics (age, gender, religion, etc.).
+- Don't reveal your assessment during the interview.
+- Don't make hiring promises or discuss salary.
+
+# Conversation Flow
+1. **Opening:** "Hello! I'm conducting the AI screening interview for the ${job.title} position at ${job.company.name}. Are you ready to begin?"
+2. **Requirements Assessment:** Ask questions directly tied to the job requirements listed above.
+3. **Experience Deep-Dive:** Probe into relevant experience from their resume.
+4. **Closing:** "Thank you for your time. You'll receive detailed feedback and next steps through the platform within 24 hours."
+
+# Evaluation Criteria
+Mentally assess:
+- Technical skill match (how well do their skills align with requirements?)
+- Experience relevance (do they have relevant background?)
+- Communication clarity (can they articulate their thoughts well?)
+- Problem-solving approach (do they provide concrete examples?)
+- Cultural fit indicators (professionalism, enthusiasm, team orientation)
+`;
+  }
+
+  const redirectPath = isPracticeMode 
+    ? `/candidate/practice/feedback/${sessionId}`
+    : `/candidate/applications/${session.applicationId}`;
+
+  const pageTitle = isPracticeMode 
+    ? "Practice Interview Session"
+    : `Interview: ${session.application?.jobPosting.title}`;
+
+  const pageSubtitle = isPracticeMode
+    ? "Practice Interview Mode"
+    : `${session.application?.jobPosting.company.name} - Job Application Screening`;
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -151,8 +213,8 @@ Use only the provided resume and candidate responses for context.
         
         {/* Header */}
         <div className="text-center space-y-2 border-b border-border pb-6">
-          <h1 className="text-3xl font-bold text-primary">AI Interview Session</h1>
-          <p className="text-muted-foreground">Practice Interview Mode</p>
+          <h1 className="text-3xl font-bold text-primary">{pageTitle}</h1>
+          <p className="text-muted-foreground">{pageSubtitle}</p>
           <p className="text-sm text-muted-foreground">Session ID: {sessionId}</p>
         </div>
 
@@ -161,10 +223,10 @@ Use only the provided resume and candidate responses for context.
           <h2 className="text-xl font-semibold text-foreground mb-3">Interview Instructions</h2>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li>• Click the microphone button below to start the interview</li>
-            <li>• The AI will ask you questions based on your resume</li>
-            <li>• Speak clearly and naturally</li>
-            <li>• The interview will last approximately 2 minutes</li>
-            <li>• You'll receive feedback after completing the interview</li>
+            <li>• The AI will ask you questions based on {isApplicationMode ? 'the job requirements and ' : ''}your resume</li>
+            <li>• Speak clearly and provide specific examples</li>
+            <li>• The interview will last approximately {isPracticeMode ? '2' : '3-5'} minutes</li>
+            <li>• You'll receive {isApplicationMode ? 'detailed evaluation ' : ''}feedback after completing the interview</li>
           </ul>
         </div>
 
@@ -173,10 +235,11 @@ Use only the provided resume and candidate responses for context.
           <VapiWidget
             assistantId={process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID as string}
             sessionId={sessionId}
+            redirectOnEnd={redirectPath}
             config={{
               model: {
                 provider: "openai",
-                model: "gpt-realtime-2025-08-28",
+                model: "gpt-4o-realtime-preview-2024-12-17",
                 messages: [
                   {
                     role: "system",
@@ -185,10 +248,12 @@ Use only the provided resume and candidate responses for context.
                 ],
                 temperature: 0.7,
               },
-              firstMessage: "Hello! I'm ready to begin your practice interview. Are you ready to start?",
+              firstMessage: isApplicationMode 
+                ? `Hello! I'm conducting the AI screening interview for the ${session.application?.jobPosting.title} position at ${session.application?.jobPosting.company.name}. Are you ready to begin?`
+                : "Hello! I'm ready to begin your practice interview. Are you ready to start?",
               voice: {
                 provider: "openai",
-                voiceId: "cedar",
+                voiceId: "alloy",
               },
             }}
           />
@@ -197,10 +262,10 @@ Use only the provided resume and candidate responses for context.
         {/* Footer Actions */}
         <div className="flex justify-center pt-4">
           <a
-            href="/candidate/practice"
+            href={isPracticeMode ? "/candidate/practice" : "/candidate/dashboard"}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            ← Back to Practice Dashboard
+            ← Back to {isPracticeMode ? "Practice" : "Applications"}
           </a>
         </div>
       </div>

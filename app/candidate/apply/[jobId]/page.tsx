@@ -1,36 +1,36 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { Loader2, Upload, BrainCircuit, CheckCircle, XCircle, Briefcase, Factory } from 'lucide-react';
 
-// --- Utility Components (ThemeButton is assumed to be defined) ---
+// --- Utility Components ---
 
 const ThemeButton = ({ children, onClick, disabled, loading, className = '' }: { 
-    children: React.ReactNode, 
-    onClick: () => void, 
-    disabled?: boolean, 
-    loading?: boolean, 
-    className?: string 
+    children: React.ReactNode, 
+    onClick: () => void, 
+    disabled?: boolean, 
+    loading?: boolean, 
+    className?: string 
 }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled || loading}
-    className={`w-full flex items-center justify-center space-x-2 py-3 px-6 rounded-md 
-                font-sans font-semibold text-lg tracking-wide 
-                bg-chart-2 text-primary-foreground hover:bg-chart-2/90 
-                transition-opacity duration-300 shadow-md
-                ${(disabled || loading) ? 'opacity-60 cursor-not-allowed' : ''}
-                ${className}`}
-  >
-    {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-    <span>{children}</span>
-  </button>
+  <button
+    onClick={onClick}
+    disabled={disabled || loading}
+    className={`w-full flex items-center justify-center space-x-2 py-3 px-6 rounded-md 
+                font-sans font-semibold text-lg tracking-wide 
+                bg-chart-2 text-primary-foreground hover:bg-chart-2/90 
+                transition-opacity duration-300 shadow-md
+                ${(disabled || loading) ? 'opacity-60 cursor-not-allowed' : ''}
+                ${className}`}
+  >
+    {loading && <Loader2 className="h-5 w-5 animate-spin" />}
+    <span>{children}</span>
+  </button>
 );
 
 
-// --- Job Data Type (Assuming server structure) ---
+// --- Job Data Type ---
 interface JobDetails {
     id: string;
     title: string;
@@ -45,10 +45,11 @@ interface JobDetails {
 
 // --- Main Application Page Component ---
 
-export default function CandidateApplyPage({ params }: { params: { jobId: string } }) {
+export default function CandidateApplyPage() {
     const router = useRouter();
     const { isLoaded: isAuthLoaded } = useAuth();
-    const jobId = params.jobId;
+    const params = useParams();
+    const jobId = params?.jobId as string;
 
     const [jobDetails, setJobDetails] = useState<JobDetails | null>(null);
     const [isLoadingData, setIsLoadingData] = useState(true);
@@ -66,7 +67,7 @@ export default function CandidateApplyPage({ params }: { params: { jobId: string
 
     // 1. Initial Data Fetch
     useEffect(() => {
-        if (!isAuthLoaded) return;
+        if (!isAuthLoaded || !jobId) return;
 
         const fetchJobData = async () => {
             try {
@@ -88,7 +89,7 @@ export default function CandidateApplyPage({ params }: { params: { jobId: string
     }, [isAuthLoaded, jobId, router]);
 
 
-    // 2. Resume Upload Handler (Existing logic repurposed)
+    // 2. Resume Upload Handler
     const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setUploadError(null);
         const file = e.target.files?.[0];

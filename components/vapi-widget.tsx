@@ -14,6 +14,21 @@ interface VapiWidgetProps {
   redirectOnEnd?: string;
 }
 
+interface Message {
+  content: string;
+  role: string;
+}
+
+interface VapiMessage {
+  type?: string;
+  transcriptType?: string;
+  transcript?: string;
+  role?: string;
+  call?: {
+    id: string;
+  };
+}
+
 export default function VapiWidget({
   assistantId,
   config = {},
@@ -23,7 +38,7 @@ export default function VapiWidget({
   const [callActive, setCallActive] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [callEnded, setCallEnded] = useState(false);
   const [vapiCallId, setVapiCallId] = useState<string | null>(null);
 
@@ -41,7 +56,7 @@ export default function VapiWidget({
 
   useEffect(() => {
     // Simple feedback generator
-    const generateSimpleFeedback = (msgs: any[]): string => {
+    const generateSimpleFeedback = (msgs: Message[]): string => {
       const userMessages = msgs.filter((m) => m.role === "user");
       const totalWords = userMessages.reduce(
         (sum, m) => sum + m.content.split(" ").length,
@@ -77,7 +92,7 @@ Keep practicing to improve your interview skills!`;
     };
 
     // Simple scoring logic
-    const calculateScore = (msgs: any[]): number => {
+    const calculateScore = (msgs: Message[]): number => {
       const userMessages = msgs.filter((m) => m.role === "user");
       if (userMessages.length === 0) return 0;
 
@@ -93,7 +108,7 @@ Keep practicing to improve your interview skills!`;
       return Math.min(Math.round(score), 100);
     };
     // Save interview data function - defined inside useEffect to avoid dependency issues
-    const saveInterviewData = async (msgs: any[], callId: string | null) => {
+    const saveInterviewData = async (msgs: Message[], callId: string | null) => {
       if (!sessionId || msgs.length === 0) {
         console.log("Skipping save: no sessionId or messages");
         return;
@@ -190,18 +205,21 @@ Keep practicing to improve your interview skills!`;
       setIsSpeaking(false);
     };
 
-    const handleMessage = (message: any) => {
+    const handleMessage = (message: VapiMessage) => {
       if (message.call?.id) {
         setVapiCallId(message.call.id);
       }
 
       if (message.type === "transcript" && message.transcriptType === "final") {
-        const newMessage = { content: message.transcript, role: message.role };
+        const newMessage: Message = { 
+          content: message.transcript || "", 
+          role: message.role || "unknown" 
+        };
         setMessages((prev) => [...prev, newMessage]);
       }
     };
 
-    const handleError = (error: any) => {
+    const handleError = (error: Error | unknown) => {
       console.log("Vapi Error", error);
       setConnecting(false);
       setCallActive(false);

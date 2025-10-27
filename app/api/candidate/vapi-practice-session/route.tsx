@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { InterviewSessionType } from "@prisma/client";
@@ -7,7 +7,7 @@ import { InterviewSessionType } from "@prisma/client";
  * POST /api/candidate/vapi-practice-session
  * Creates a new practice interview session
  */
-export async function POST(req: NextRequest) {
+export async function POST() {
   const { userId: clerkId } = await auth();
 
   if (!clerkId) {

@@ -11,22 +11,21 @@ async function parsePdfToText(buffer: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {
     const pdfParser = new PDFParser(null, 1); // null, 1 for better text extraction
 
-    pdfParser.on("pdfParser_dataError", (errData: any) => {
-      console.error("PDF Parser Error:", errData.parserError);
+    pdfParser.on("pdfParser_dataError", () => {
       reject(new Error("Failed to parse PDF"));
     });
 
-    pdfParser.on("pdfParser_dataReady", (pdfData: any) => {
+    pdfParser.on("pdfParser_dataReady", (pdfData) => {
       try {
         // Extract text from all pages
         let text = "";
 
         if (pdfData.Pages && Array.isArray(pdfData.Pages)) {
-          pdfData.Pages.forEach((page: any) => {
+          pdfData.Pages.forEach((page) => {
             if (page.Texts && Array.isArray(page.Texts)) {
-              page.Texts.forEach((textItem: any) => {
+              page.Texts.forEach((textItem) => {
                 if (textItem.R && Array.isArray(textItem.R)) {
-                  textItem.R.forEach((r: any) => {
+                  textItem.R.forEach((r) => {
                     if (r.T) {
                       try {
                         text += decodeURIComponent(r.T) + " ";

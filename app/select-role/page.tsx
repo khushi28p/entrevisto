@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Loader2, User, Briefcase, ChevronRight } from 'lucide-react';
 
 // --- Utility Components based on Theme ---
@@ -30,26 +30,26 @@ const RoleOption: React.FC<RoleOptionProps> = ({
 }) => (
   <div 
     className={`
-      flex flex-col p-6 sm:p-8 border border-border rounded-lg h-full
+      flex flex-col p-6 sm:p-8 border border-gray-200 rounded-lg h-full
       transition-all duration-300 cursor-pointer 
-      hover:border-ring hover:shadow-md
+      hover:border-blue-500 hover:shadow-md
       group
     `}
     onClick={() => !isLoading && onClick(role)}
   >
     <div className="flex items-center space-x-4 mb-4">
-      <div className={`p-3 rounded-md ${colorClass} text-primary-foreground shadow-sm transition-transform group-hover:scale-105`}>
+      <div className={`p-3 rounded-md ${colorClass} text-white shadow-sm transition-transform group-hover:scale-105`}>
         <Icon className="h-6 w-6" />
       </div>
-      <h3 className="text-2xl font-serif font-bold text-foreground">{title}</h3>
+      <h3 className="text-2xl font-bold text-gray-900">{title}</h3>
     </div>
     
-    <p className="text-muted-foreground flex-grow mb-6">{description}</p>
+    <p className="text-gray-600 flex-grow mb-6">{description}</p>
 
     <div className="mb-6 space-y-2">
         {features.map((feature, index) => (
-          <div key={index} className="flex items-center text-sm text-secondary-foreground">
-            <ChevronRight className="h-4 w-4 mr-1 text-primary" />
+          <div key={index} className="flex items-center text-sm text-gray-700">
+            <ChevronRight className="h-4 w-4 mr-1 text-blue-600" />
             {feature}
           </div>
         ))}
@@ -60,11 +60,11 @@ const RoleOption: React.FC<RoleOptionProps> = ({
       disabled={isLoading}
       className={`
         mt-auto w-full flex items-center justify-center space-x-2 py-3 px-6 rounded-md 
-        font-sans font-semibold text-base tracking-wide 
+        font-semibold text-base tracking-wide 
         transition-all duration-300
-        ${colorClass === 'bg-chart-2' 
-          ? 'bg-chart-2 text-primary-foreground hover:bg-chart-2/80' 
-          : 'bg-chart-1 text-primary-foreground hover:bg-chart-1/80'
+        ${colorClass === 'bg-emerald-600' 
+          ? 'bg-emerald-600 text-white hover:bg-emerald-700' 
+          : 'bg-blue-600 text-white hover:bg-blue-700'
         }
         ${isLoading ? 'opacity-60 cursor-not-allowed' : 'shadow-sm hover:shadow-md'}
       `}
@@ -88,11 +88,50 @@ export default function SelectRolePage() {
   const router = useRouter();
   const { user, isLoaded } = useUser();
   const [loadingRole, setLoadingRole] = useState<'CANDIDATE' | 'RECRUITER' | null>(null);
+  const [checkingRole, setCheckingRole] = useState(true);
 
-  if (!isLoaded) {
+  useEffect(() => {
+    // Check if user already has a role assigned
+    const checkExistingRole = async () => {
+      if (!isLoaded || !user) return;
+
+      try {
+        const response = await fetch("/api/user/get-role");
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // If user has a role, redirect them to appropriate dashboard
+          if (data.role === 'RECRUITER') {
+            router.push('/recruiter/dashboard');
+          } else if (data.role === 'CANDIDATE') {
+            router.push('/candidate/dashboard');
+          } else {
+            // User exists but no role set, stay on this page
+            setCheckingRole(false);
+          }
+        } else if (response.status === 404) {
+          // User not found in database, stay on this page
+          setCheckingRole(false);
+        } else {
+          // Other error occurred
+          console.error('Error checking role:', response.statusText);
+          setCheckingRole(false);
+        }
+      } catch (error) {
+        console.error('Network error checking role:', error);
+        setCheckingRole(false);
+      }
+    };
+
+    checkExistingRole();
+  }, [isLoaded, user, router]);
+
+  // Show loading while checking authentication and existing role
+  if (!isLoaded || checkingRole) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
       </div>
     );
   }
@@ -103,7 +142,7 @@ export default function SelectRolePage() {
     setLoadingRole(role);
 
     try {
-      // 1. Call the actual API endpoint
+      // Call the API endpoint to set user role
       const response = await fetch('/api/user/set-role', {
         method: 'POST',
         headers: {
@@ -112,17 +151,16 @@ export default function SelectRolePage() {
         body: JSON.stringify({ role }),
       });
 
-      console.log("response: ", response);
       if (!response.ok) {
-        // Handle API errors (e.g., 400 Bad Request, 500 Internal Error)
+        // Handle API errors
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
         console.error('API Error:', errorData.message || response.statusText);
+        alert(`Error: ${errorData.message || 'Failed to set role. Please try again.'}`);
         setLoadingRole(null);
-        // NOTE: In a real app, you would show a user-facing error message here.
         return;
       }
 
-      // 2. Redirect based on role after successful database update
+      // Redirect based on role after successful database update
       if (role === 'RECRUITER') {
         router.push('/recruiter/onboarding');
       } else {
@@ -130,23 +168,23 @@ export default function SelectRolePage() {
       }
     } catch (error) {
       console.error('Network or unexpected error setting role:', error);
+      alert('Network error. Please check your connection and try again.');
       setLoadingRole(null);
-      // NOTE: Show generic network error to user.
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 sm:p-8 bg-background text-foreground font-sans">
+    <div className="flex items-center justify-center min-h-screen p-4 sm:p-8 bg-gradient-to-br from-gray-50 to-gray-100">
       
-      {/* --- Main Selection Card (The enclosing element) --- */}
-      <div className="w-full max-w-5xl bg-card text-card-foreground border border-border shadow-2xl rounded-xl p-8 md:p-12">
+      {/* Main Selection Card */}
+      <div className="w-full max-w-5xl bg-white shadow-2xl rounded-xl p-8 md:p-12">
         
         {/* Header Section */}
         <header className="text-center mb-10">
-          <h1 className="text-4xl sm:text-5xl font-serif font-extrabold tracking-tight text-primary">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gray-900">
             Select Your Role
           </h1>
-          <p className="mt-3 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">
             Get started by defining how you&apos;ll use the AI Screening Platform.
           </p>
         </header>
@@ -164,7 +202,7 @@ export default function SelectRolePage() {
               "Detailed Performance Scoring"
             ]}
             icon={User}
-            colorClass="bg-chart-2" 
+            colorClass="bg-blue-600" 
             onClick={handleRoleSelect}
             isLoading={loadingRole === 'CANDIDATE'}
           />
@@ -179,7 +217,7 @@ export default function SelectRolePage() {
               "Filter Candidates by Score"
             ]}
             icon={Briefcase}
-            colorClass="bg-chart-1"
+            colorClass="bg-blue-600"
             onClick={handleRoleSelect}
             isLoading={loadingRole === 'RECRUITER'}
           />

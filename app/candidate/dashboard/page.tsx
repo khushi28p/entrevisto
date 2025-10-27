@@ -235,11 +235,11 @@ export default async function CandidateDashboardPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <header className="pt-8 border-b border-border/80 pb-6">
+        <header className="border-b border-border/80 pb-6 mb-8">
           <h1 className="text-4xl font-serif font-extrabold tracking-tight text-foreground">
             Welcome Back!
           </h1>
@@ -250,7 +250,7 @@ export default async function CandidateDashboardPage() {
 
         {/* Resume Warning Banner */}
         {!hasResume && (
-          <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex items-start space-x-3">
+          <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex items-start space-x-3 mb-8">
             <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-semibold text-orange-500">Resume Required</p>
@@ -267,7 +267,7 @@ export default async function CandidateDashboardPage() {
         )}
         
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard 
             icon={Briefcase} 
             label="Applications" 

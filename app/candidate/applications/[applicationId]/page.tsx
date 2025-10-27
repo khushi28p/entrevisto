@@ -59,8 +59,8 @@ export default async function ApplicationDetailsPage({ params }: PageProps) {
 
   if (!application) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-        <div className="text-center space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Application Not Found</h1>
           <p className="text-muted-foreground">The application you're looking for doesn't exist.</p>
           <a
@@ -77,8 +77,8 @@ export default async function ApplicationDetailsPage({ params }: PageProps) {
   // Verify ownership
   if (application.candidate?.userId !== user.id) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-        <div className="text-center space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Access Denied</h1>
           <p className="text-muted-foreground">You don't have permission to view this application.</p>
           <a
@@ -123,11 +123,11 @@ export default async function ApplicationDetailsPage({ params }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-8">
-      <div className="max-w-5xl mx-auto space-y-8 pt-8">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="space-y-4">
+        <div className="space-y-4 mb-8">
           <a
             href="/candidate/dashboard"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center"
@@ -159,13 +159,13 @@ export default async function ApplicationDetailsPage({ params }: PageProps) {
         </div>
 
         {/* Application Info Card */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+        <div className="bg-card border border-border rounded-xl p-6 shadow-lg mb-8">
           <h2 className="text-xl font-bold text-foreground mb-4 flex items-center space-x-2">
             <Briefcase className="h-5 w-5" />
             <span>Application Information</span>
           </h2>
           
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-4 ">
             <div className="flex items-center space-x-3">
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <div>
@@ -198,7 +198,7 @@ export default async function ApplicationDetailsPage({ params }: PageProps) {
 
         {/* Interview Results */}
         {application.interviewResult && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Score Card */}
             <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center space-x-2">
@@ -240,10 +240,8 @@ export default async function ApplicationDetailsPage({ params }: PageProps) {
                 <span>AI Feedback</span>
               </h2>
               
-              <div className="prose prose-sm max-w-none">
-                <pre className="whitespace-pre-wrap font-sans text-sm text-foreground/90 leading-relaxed">
-{application.interviewResult.aiFeedback}
-                </pre>
+              <div className="text-foreground/90 leading-relaxed whitespace-pre-wrap text-sm">
+                {application.interviewResult.aiFeedback}
               </div>
             </div>
 
@@ -274,7 +272,7 @@ export default async function ApplicationDetailsPage({ params }: PageProps) {
         )}
 
         {/* Next Steps */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+        <div className="bg-card border border-border rounded-xl p-6 shadow-lg mt-8">
           <h2 className="text-xl font-bold text-foreground mb-4">Next Steps</h2>
           <div className="text-sm text-muted-foreground space-y-2">
             {application.status === "AI_SCREENING_COMPLETE" && (

@@ -2,10 +2,10 @@
 
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
@@ -101,6 +101,83 @@ export async function PATCH(
     console.error("Error saving interview results:", error);
     return NextResponse.json(
       { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ sessionId: string }> }
+) {
+  try {
+    const { userId: clerkId } = await auth();
+    const { sessionId } = await params;
+
+    if (!clerkId) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    const session = await prisma.interviewResult.findUnique({
+      where: { id: sessionId },
+      include: {
+        candidateProfile: {
+          select: { userId: true },
+        },
+        application: true,
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        { 
+          success: false,
+          message: "Interview session not found" 
+        }, 
+        { status: 404 }
+      );
+    }
+
+    if (session.candidateProfile?.userId !== user.id) {
+      return NextResponse.json(
+        { 
+          success: false,
+          message: "Access denied" 
+        }, 
+        { status: 403 }
+      );
+    }
+
+    // ✅ Return data in the format expected by the frontend
+    return NextResponse.json(
+      { 
+        success: true,
+        session: {
+          id: session.id,
+          sessionType: session.sessionType,
+          transcript: session.transcript || "",
+          aiFeedback: session.aiFeedback || "",
+          score: session.score || 0,
+          createdAt: session.createdAt.toISOString(),
+        }
+      }, 
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error fetching interview session:", error);
+    return NextResponse.json(
+      { 
+        success: false,
+        message: "Internal server error" 
+      }, 
       { status: 500 }
     );
   }

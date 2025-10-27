@@ -1,6 +1,5 @@
 "use client";
 
-import { SiteHeader } from "@/components/header";
 import { SiteFooter } from "@/components/footer";
 import { SectionHeading } from "@/components/section-header";
 import {
@@ -16,6 +15,7 @@ import {
   Users2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const trustedLogos = [
   "Pioneer Labs",
@@ -113,10 +113,11 @@ const testimonials = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   return (
     <div className="relative min-h-screen bg-background" id="top">
       <div className="pointer-events-none absolute inset-x-0 top-[-180px] -z-10 h-[420px] bg-[radial-gradient(circle_at_top,_rgba(88,78,220,0.28),_rgba(88,78,220,0)_65%)]" />
-      <SiteHeader />
+
       <main className="mx-auto flex max-w-6xl flex-col gap-24 px-4 pb-32 pt-12 sm:px-6 lg:gap-32 lg:px-8">
         <section
           className="relative isolate overflow-hidden rounded-[2.5rem] border border-primary/20 bg-card/90 p-8 shadow-soft sm:p-14"
@@ -142,17 +143,21 @@ export default function Home() {
                 workspace.
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Button className="h-12 rounded-full px-6 text-base shadow-bold">
+                <Button
+                  onClick={() => router.push("/candidate/dashboard")}
+                  className="h-12 rounded-full px-6 text-base shadow-bold"
+                >
                   Get Started
                   <ArrowRight className="h-4 w-4" />
                 </Button>
-                <Button
+                {/* add the demo video then add link to it  */}
+                {/* <Button
                   variant="outline"
                   className="h-12 rounded-full border-border/70 bg-background/80 px-6 text-base text-foreground backdrop-blur hover:bg-background"
                 >
                   <Play className="h-4 w-4" />
                   Watch product tour
-                </Button>
+                </Button> */}
               </div>
               <div className="grid gap-5 rounded-2xl border border-border/70 bg-background/80 p-6 shadow-sm sm:grid-cols-3">
                 {metrics.map((metric) => (

@@ -159,121 +159,121 @@ export default function CandidatePracticePage() {
   const isPracticeDisabled = isInterviewLoading || !hasParsedResumeText;
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-8 font-sans">
-        <div className="max-w-4xl mx-auto space-y-10 pt-8">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
             
-            {/* Header */}
-            <header className="text-center border-b border-border/80 pb-6">
-                <BrainCircuit className="h-12 w-12 text-primary mx-auto mb-3" />
-                <h1 className="text-4xl font-serif font-extrabold tracking-tight text-primary">
-                    AI Interview Practice Mode
-                </h1>
-                <p className="text-lg text-muted-foreground mt-2">
-                    Start a personalized mock interview based on your career history.
-                </p>
-            </header>
+        {/* Header */}
+        <header className="text-center border-b border-border/80 pb-6 mb-8">
+          <BrainCircuit className="h-12 w-12 text-primary mx-auto mb-3" />
+          <h1 className="text-4xl font-serif font-extrabold tracking-tight text-primary">
+            AI Interview Practice Mode
+          </h1>
+          <p className="text-lg text-muted-foreground mt-2">
+            Start a personalized mock interview based on your career history.
+          </p>
+        </header>
 
-            <div className="grid md:grid-cols-2 gap-8">
-                
-                {/* 1. Resume Upload Card */}
-                <div className="p-8 bg-card border border-border rounded-xl shadow-lg space-y-6">
-                    <h2 className="text-2xl font-serif font-bold text-secondary-foreground flex items-center space-x-2">
-                        <FileText className="h-6 w-6 text-chart-2" />
-                        <span>Step 1: Upload Resume (PDF)</span>
-                    </h2>
-                    
-                    <div className="space-y-4">
-                        <label htmlFor="resume-upload" className="block text-sm font-medium text-foreground">
-                            Select PDF File
-                        </label>
-                        <div className="flex items-center space-x-3">
-                            <input
-                                id="resume-upload"
-                                type="file"
-                                accept=".pdf"
-                                onChange={handleFileChange}
-                                disabled={isUploading}
-                                className="block w-full text-sm text-foreground/80
-                                    file:mr-4 file:py-2 file:px-4
-                                    file:rounded-full file:border-0
-                                    file:text-sm file:font-semibold
-                                    file:bg-secondary file:text-secondary-foreground
-                                    hover:file:bg-secondary/80
-                                "
-                            />
-                        </div>
-                    </div>
-                    
-                    {resumeFile && (
-                        <p className="text-sm text-muted-foreground flex items-center space-x-2">
-                            <FileText className="h-4 w-4" />
-                            <span>Selected: **{resumeFile.name}** ({Math.round(resumeFile.size / 1024)} KB)</span>
-                        </p>
-                    )}
-
-                    <ThemeButton 
-                        onClick={handleUploadSubmit} 
-                        loading={isUploading}
-                        disabled={isUploadDisabled}
-                        className="bg-chart-2 hover:bg-chart-2/80"
-                    >
-                        <Upload className="h-5 w-5" />
-                        <span>{isUploading ? 'Processing...' : 'Upload & Analyze Resume'}</span>
-                    </ThemeButton>
-
-                    {uploadError && (
-                        <div className="flex items-center space-x-2 text-sm text-destructive-foreground bg-destructive/10 border border-destructive p-3 rounded-md">
-                            <XCircle className="h-4 w-4" />
-                            <span>Upload Error: {uploadError}</span>
-                        </div>
-                    )}
-                    {uploadSuccess && (
-                        <div className="flex items-center space-x-2 text-sm text-chart-1 bg-chart-1/10 border border-chart-1 p-3 rounded-md">
-                            <CheckCircle className="h-4 w-4" />
-                            <span>Resume successfully processed and ready for interview!</span>
-                        </div>
-                    )}
-                </div>
-
-                {/* 2. Practice Start Card */}
-                <div className="p-8 bg-card border border-border rounded-xl shadow-lg space-y-6 flex flex-col justify-between">
-                    <div>
-                        <h2 className="text-2xl font-serif font-bold text-secondary-foreground flex items-center space-x-2">
-                            <BrainCircuit className="h-6 w-6 text-chart-3" />
-                            <span>Step 2: Launch Interview</span>
-                        </h2>
-                        <p className="text-muted-foreground mt-4">
-                            The Vapi AI Agent will ask you personalized questions based on the content of your analyzed resume.
-                        </p>
-                    </div>
-                    
-                    <div className={`p-4 rounded-lg text-sm font-medium ${hasParsedResumeText ? 'bg-chart-1/10 text-chart-1' : 'bg-destructive/10 text-destructive-foreground border border-destructive'}`}>
-                        {hasParsedResumeText 
-                            ? 'Status: Resume Analysis Complete. Ready to launch!' 
-                            : 'Status: Resume analysis required. Please complete Step 1.'
-                        }
-                    </div>
-
-                    {interviewError && (
-                        <div className="flex items-center space-x-2 text-sm text-destructive-foreground bg-destructive/10 border border-destructive p-3 rounded-md">
-                            <XCircle className="h-4 w-4" />
-                            <span>Launch Error: {interviewError}</span>
-                        </div>
-                    )}
-
-                    <ThemeButton 
-                        onClick={handleStartPractice} 
-                        loading={isInterviewLoading}
-                        disabled={isPracticeDisabled}
-                        className="bg-chart-3 hover:bg-chart-3/90"
-                    >
-                        <BrainCircuit className="h-5 w-5" />
-                        <span>{isInterviewLoading ? 'Connecting to AI...' : 'Start Practice Session'}</span>
-                    </ThemeButton>
-                </div>
-
+        <div className="grid md:grid-cols-2 gap-8">
+          
+          {/* 1. Resume Upload Card */}
+          <div className="p-8 bg-card border border-border rounded-xl shadow-lg space-y-6">
+            <h2 className="text-2xl font-serif font-bold text-secondary-foreground flex items-center space-x-2">
+              <FileText className="h-6 w-6 text-chart-2" />
+              <span>Step 1: Upload Resume (PDF)</span>
+            </h2>
+            
+            <div className="space-y-4">
+              <label htmlFor="resume-upload" className="block text-sm font-medium text-foreground">
+                Select PDF File
+              </label>
+              <div className="flex items-center space-x-3">
+                <input
+                  id="resume-upload"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  disabled={isUploading}
+                  className="block w-full text-sm text-foreground/80
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-secondary file:text-secondary-foreground
+                      hover:file:bg-secondary/80
+                  "
+                />
+              </div>
             </div>
+            
+            {resumeFile && (
+              <p className="text-sm text-muted-foreground flex items-center space-x-2">
+                <FileText className="h-4 w-4" />
+                <span>Selected: **{resumeFile.name}** ({Math.round(resumeFile.size / 1024)} KB)</span>
+              </p>
+            )}
+
+            <ThemeButton 
+              onClick={handleUploadSubmit} 
+              loading={isUploading}
+              disabled={isUploadDisabled}
+              className="bg-chart-2 hover:bg-chart-2/80"
+            >
+              <Upload className="h-5 w-5" />
+              <span>{isUploading ? 'Processing...' : 'Upload & Analyze Resume'}</span>
+            </ThemeButton>
+
+            {uploadError && (
+              <div className="flex items-center space-x-2 text-sm text-destructive-foreground bg-destructive/10 border border-destructive p-3 rounded-md">
+                <XCircle className="h-4 w-4" />
+                <span>Upload Error: {uploadError}</span>
+              </div>
+            )}
+            {uploadSuccess && (
+              <div className="flex items-center space-x-2 text-sm text-chart-1 bg-chart-1/10 border border-chart-1 p-3 rounded-md">
+                <CheckCircle className="h-4 w-4" />
+                <span>Resume successfully processed and ready for interview!</span>
+              </div>
+            )}
+          </div>
+
+          {/* 2. Practice Start Card */}
+          <div className="p-8 bg-card border border-border rounded-xl shadow-lg space-y-6 flex flex-col justify-between">
+            <div>
+              <h2 className="text-2xl font-serif font-bold text-secondary-foreground flex items-center space-x-2">
+                <BrainCircuit className="h-6 w-6 text-chart-3" />
+                <span>Step 2: Launch Interview</span>
+              </h2>
+              <p className="text-muted-foreground mt-4">
+                The Vapi AI Agent will ask you personalized questions based on the content of your analyzed resume.
+              </p>
+            </div>
+            
+            <div className={`p-4 rounded-lg text-sm font-medium ${hasParsedResumeText ? 'bg-chart-1/10 text-chart-1' : 'bg-destructive/10 text-destructive-foreground border border-destructive'}`}>
+              {hasParsedResumeText 
+                ? 'Status: Resume Analysis Complete. Ready to launch!' 
+                : 'Status: Resume analysis required. Please complete Step 1.'
+              }
+            </div>
+
+            {interviewError && (
+              <div className="flex items-center space-x-2 text-sm text-destructive-foreground bg-destructive/10 border border-destructive p-3 rounded-md">
+                <XCircle className="h-4 w-4" />
+                <span>Launch Error: {interviewError}</span>
+              </div>
+            )}
+
+            <ThemeButton 
+              onClick={handleStartPractice} 
+              loading={isInterviewLoading}
+              disabled={isPracticeDisabled}
+              className="bg-chart-3 hover:bg-chart-3/90"
+            >
+              <BrainCircuit className="h-5 w-5" />
+              <span>{isInterviewLoading ? 'Connecting to AI...' : 'Start Practice Session'}</span>
+            </ThemeButton>
+          </div>
+
         </div>
+      </div>
     </div>
   );
 }

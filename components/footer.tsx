@@ -32,7 +32,7 @@ export function SiteFooter({ className }: SiteFooterProps) {
     <footer
       className={cn(
         "border-t border-border/70 bg-gradient-to-b from-background via-background/90 to-muted/80",
-        className,
+        className
       )}
     >
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">

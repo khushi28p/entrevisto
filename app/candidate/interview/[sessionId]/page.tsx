@@ -55,8 +55,8 @@ export default async function InterviewPage({ params }: PageProps) {
 
   if (!session) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-        <div className="text-center space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Session Not Found</h1>
           <p className="text-muted-foreground">The interview session you're looking for doesn't exist.</p>
           <a
@@ -73,8 +73,8 @@ export default async function InterviewPage({ params }: PageProps) {
   // Verify ownership
   if (session.candidateProfile?.userId !== user.id) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-        <div className="text-center space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Access Denied</h1>
           <p className="text-muted-foreground">You don't have permission to view this session.</p>
           <a
@@ -208,18 +208,18 @@ Mentally assess:
     : `${session.application?.jobPosting.company.name} - Job Application Screening`;
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto pt-8 space-y-8">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center space-y-2 border-b border-border pb-6">
+        <div className="text-center space-y-2 border-b border-border pb-6 mb-8">
           <h1 className="text-3xl font-bold text-primary">{pageTitle}</h1>
           <p className="text-muted-foreground">{pageSubtitle}</p>
           <p className="text-sm text-muted-foreground">Session ID: {sessionId}</p>
         </div>
 
         {/* Instructions Card */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
+        <div className="bg-card border border-border rounded-xl p-6 shadow-lg mb-8">
           <h2 className="text-xl font-semibold text-foreground mb-3">Interview Instructions</h2>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li>• Click the microphone button below to start the interview</li>
@@ -231,7 +231,7 @@ Mentally assess:
         </div>
 
         {/* Vapi Widget */}
-        <div className="bg-card border border-border rounded-xl p-8 shadow-lg">
+        <div className="bg-card border border-border rounded-xl p-8 shadow-lg mb-8">
           <VapiWidget
             assistantId={process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID as string}
             sessionId={sessionId}
@@ -239,7 +239,7 @@ Mentally assess:
             config={{
               model: {
                 provider: "openai",
-                model: "gpt-4o-realtime-preview-2024-12-17",
+                model: "gpt-realtime-2025-08-28",
                 messages: [
                   {
                     role: "system",
@@ -253,14 +253,14 @@ Mentally assess:
                 : "Hello! I'm ready to begin your practice interview. Are you ready to start?",
               voice: {
                 provider: "openai",
-                voiceId: "alloy",
+                voiceId: "cedar",
               },
             }}
           />
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center">
           <a
             href={isPracticeMode ? "/candidate/practice" : "/candidate/dashboard"}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"

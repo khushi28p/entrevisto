@@ -1,5 +1,3 @@
-// app/candidate/interview/[sessionId]/page.tsx
-
 import VapiWidget from "@/components/vapi-widget";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
@@ -57,8 +55,12 @@ export default async function InterviewPage({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
-          <h1 className="text-2xl font-bold text-destructive">Session Not Found</h1>
-          <p className="text-muted-foreground">The interview session you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-bold text-destructive">
+            Session Not Found
+          </h1>
+          <p className="text-muted-foreground">
+            The interview session you&apos;re looking for doesn&apos;t exist.
+          </p>
           <a
             href="/candidate/dashboard"
             className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
@@ -76,7 +78,9 @@ export default async function InterviewPage({ params }: PageProps) {
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Access Denied</h1>
-          <p className="text-muted-foreground">You don't have permission to view this session.</p>
+          <p className="text-muted-foreground">
+            You don&apos;t have permission to view this session.
+          </p>
           <a
             href="/candidate/dashboard"
             className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
@@ -88,7 +92,8 @@ export default async function InterviewPage({ params }: PageProps) {
     );
   }
 
-  const resumeText = session.candidateProfile?.resumeText || "No resume available";
+  const resumeText =
+    session.candidateProfile?.resumeText || "No resume available";
   const isPracticeMode = session.sessionType === "PRACTICE";
   const isApplicationMode = session.sessionType === "APPLICATION";
 
@@ -99,7 +104,7 @@ export default async function InterviewPage({ params }: PageProps) {
     systemInstruction = `
 # Role & Objective
 You are an AI Interviewer for a hiring platform. 
-Your goal is to conduct a short, context-based practice interview using the candidate's resume. 
+Your goal is to conduct a short, context-based practice interview using the candidates resume. 
 You must ask intelligent, tailored questions that reflect the candidate's background and skills.
 Success means completing a focused, friendly, and professional interview in about 2 minutes.
 
@@ -195,11 +200,11 @@ Mentally assess:
 `;
   }
 
-  const redirectPath = isPracticeMode 
+  const redirectPath = isPracticeMode
     ? `/candidate/practice/feedback/${sessionId}`
     : `/candidate/applications/${session.applicationId}`;
 
-  const pageTitle = isPracticeMode 
+  const pageTitle = isPracticeMode
     ? "Practice Interview Session"
     : `Interview: ${session.application?.jobPosting.title}`;
 
@@ -210,23 +215,36 @@ Mentally assess:
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        
         {/* Header */}
         <div className="text-center space-y-2 border-b border-border pb-6 mb-8">
           <h1 className="text-3xl font-bold text-primary">{pageTitle}</h1>
           <p className="text-muted-foreground">{pageSubtitle}</p>
-          <p className="text-sm text-muted-foreground">Session ID: {sessionId}</p>
+          <p className="text-sm text-muted-foreground">
+            Session ID: {sessionId}
+          </p>
         </div>
 
         {/* Instructions Card */}
         <div className="bg-card border border-border rounded-xl p-6 shadow-lg mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-3">Interview Instructions</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3">
+            Interview Instructions
+          </h2>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li>• Click the microphone button below to start the interview</li>
-            <li>• The AI will ask you questions based on {isApplicationMode ? 'the job requirements and ' : ''}your resume</li>
+            <li>
+              • The AI will ask you questions based on{" "}
+              {isApplicationMode ? "the job requirements and " : ""}your resume
+            </li>
             <li>• Speak clearly and provide specific examples</li>
-            <li>• The interview will last approximately {isPracticeMode ? '2' : '3-5'} minutes</li>
-            <li>• You'll receive {isApplicationMode ? 'detailed evaluation ' : ''}feedback after completing the interview</li>
+            <li>
+              • The interview will last approximately{" "}
+              {isPracticeMode ? "2" : "3-5"} minutes
+            </li>
+            <li>
+              • You&apos;ll receive{" "}
+              {isApplicationMode ? "detailed evaluation " : ""}
+              feedback after completing the interview
+            </li>
           </ul>
         </div>
 
@@ -248,7 +266,7 @@ Mentally assess:
                 ],
                 temperature: 0.7,
               },
-              firstMessage: isApplicationMode 
+              firstMessage: isApplicationMode
                 ? `Hello! I'm conducting the AI screening interview for the ${session.application?.jobPosting.title} position at ${session.application?.jobPosting.company.name}. Are you ready to begin?`
                 : "Hello! I'm ready to begin your practice interview. Are you ready to start?",
               voice: {
@@ -262,7 +280,9 @@ Mentally assess:
         {/* Footer Actions */}
         <div className="flex justify-center">
           <a
-            href={isPracticeMode ? "/candidate/practice" : "/candidate/dashboard"}
+            href={
+              isPracticeMode ? "/candidate/practice" : "/candidate/dashboard"
+            }
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             ← Back to {isPracticeMode ? "Practice" : "Applications"}

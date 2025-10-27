@@ -10,13 +10,8 @@ import {
   FileText, 
   MessageSquare,
   TrendingUp,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Download,
-  View,
-  ViewIcon,
-  Eye
+  Eye,
+  Clock
 } from "lucide-react";
 import { ApplicationActionButtons } from "@/components/application-action-buttons";
 
@@ -128,7 +123,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Application Not Found</h1>
-          <p className="text-muted-foreground">The application you're looking for doesn't exist.</p>
+          <p className="text-muted-foreground">The application you&apos;re looking for doesn&apos;t exist.</p>
           <Link
             href="/recruiter/dashboard"
             className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
@@ -264,7 +259,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                 <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <h3 className="text-xl font-semibold text-foreground mb-2">Interview Pending</h3>
                 <p className="text-sm text-muted-foreground">
-                  The candidate hasn't completed the AI screening interview yet.
+                  The candidate hasn&apos;t completed the AI screening interview yet.
                 </p>
               </div>
             )}

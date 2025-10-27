@@ -8,11 +8,8 @@ import {
   Calendar,
   Users,
   Edit,
-  Eye,
   TrendingUp,
-  Clock,
   CheckCircle,
-  XCircle,
 } from "lucide-react";
 
 type PageProps = {
@@ -159,7 +156,7 @@ export default async function JobDetailsPage({ params }: PageProps) {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Job Not Found</h1>
           <p className="text-muted-foreground">
-            The job posting you're looking for doesn't exist.
+            The job posting you&apos;re looking for doesn&apos;t exist.
           </p>
           <Link
             href="/recruiter/dashboard"

@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   Clock3,
   Fingerprint,
-  Play,
   ShieldCheck,
   Sparkles,
   Users2,

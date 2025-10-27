@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { Role, ApplicationStatus } from '@prisma/client';
-import { Briefcase, Factory, UserCheck, Search, Zap, Clock, ThumbsUp, X } from 'lucide-react';
+import { Briefcase, Factory, UserCheck, Search, Zap, Clock,} from 'lucide-react';
 import Link from 'next/link';
 
 // Helper function to get a color class based on the application status
@@ -45,7 +45,7 @@ const ScoreBadge = ({ score }: { score: number | null }) => {
 };
 
 // Component to render a single Application row
-const ApplicationRow = ({ app, userEmail }: { 
+const ApplicationRow = ({ app }: { 
     app: { 
         id: string; 
         status: ApplicationStatus; 

@@ -1,10 +1,11 @@
-"use client"
+"use client";
 
 import { vapi } from "@/lib/vapi";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useRef, useState } from "react";
 import { Bot, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface VapiWidgetProps {
   assistantId: string;
@@ -17,7 +18,7 @@ export default function VapiWidget({
   assistantId,
   config = {},
   sessionId,
-  redirectOnEnd
+  redirectOnEnd,
 }: VapiWidgetProps) {
   const [callActive, setCallActive] = useState(false);
   const [connecting, setConnecting] = useState(false);
@@ -33,28 +34,43 @@ export default function VapiWidget({
   // Auto-scroll for messages
   useEffect(() => {
     if (messageContainerRef.current) {
-      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
+      messageContainerRef.current.scrollTop =
+        messageContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
   useEffect(() => {
     // Simple feedback generator
     const generateSimpleFeedback = (msgs: any[]): string => {
-      const userMessages = msgs.filter(m => m.role === 'user');
-      const totalWords = userMessages.reduce((sum, m) => sum + m.content.split(' ').length, 0);
-      const avgWordsPerResponse = userMessages.length > 0 ? Math.round(totalWords / userMessages.length) : 0;
+      const userMessages = msgs.filter((m) => m.role === "user");
+      const totalWords = userMessages.reduce(
+        (sum, m) => sum + m.content.split(" ").length,
+        0
+      );
+      const avgWordsPerResponse =
+        userMessages.length > 0
+          ? Math.round(totalWords / userMessages.length)
+          : 0;
 
       return `Interview Summary:
 - Total Responses: ${userMessages.length}
 - Average Response Length: ${avgWordsPerResponse} words
-- Communication: ${avgWordsPerResponse > 20 ? 'Detailed and thorough' : 'Concise'}
+- Communication: ${
+        avgWordsPerResponse > 20 ? "Detailed and thorough" : "Concise"
+      }
 
 Strengths:
 - You participated actively in the interview
-- Your responses were ${avgWordsPerResponse > 15 ? 'well-articulated' : 'clear and to the point'}
+- Your responses were ${
+        avgWordsPerResponse > 15 ? "well-articulated" : "clear and to the point"
+      }
 
 Areas for Improvement:
-- ${avgWordsPerResponse < 15 ? 'Consider providing more detailed examples in your responses' : 'Continue practicing to maintain consistency'}
+- ${
+        avgWordsPerResponse < 15
+          ? "Consider providing more detailed examples in your responses"
+          : "Continue practicing to maintain consistency"
+      }
 - Focus on highlighting specific achievements and metrics
 
 Keep practicing to improve your interview skills!`;
@@ -62,10 +78,13 @@ Keep practicing to improve your interview skills!`;
 
     // Simple scoring logic
     const calculateScore = (msgs: any[]): number => {
-      const userMessages = msgs.filter(m => m.role === 'user');
+      const userMessages = msgs.filter((m) => m.role === "user");
       if (userMessages.length === 0) return 0;
 
-      const totalWords = userMessages.reduce((sum, m) => sum + m.content.split(' ').length, 0);
+      const totalWords = userMessages.reduce(
+        (sum, m) => sum + m.content.split(" ").length,
+        0
+      );
       const avgWords = totalWords / userMessages.length;
 
       let score = Math.min(userMessages.length * 15, 60);
@@ -76,7 +95,7 @@ Keep practicing to improve your interview skills!`;
     // Save interview data function - defined inside useEffect to avoid dependency issues
     const saveInterviewData = async (msgs: any[], callId: string | null) => {
       if (!sessionId || msgs.length === 0) {
-        console.log('Skipping save: no sessionId or messages');
+        console.log("Skipping save: no sessionId or messages");
         return;
       }
 
@@ -84,8 +103,11 @@ Keep practicing to improve your interview skills!`;
         console.log("Saving interview data...", { messageCount: msgs.length });
 
         const transcript = msgs
-          .map(msg => `${msg.role === 'assistant' ? 'AI' : 'User'}: ${msg.content}`)
-          .join('\n\n');
+          .map(
+            (msg) =>
+              `${msg.role === "assistant" ? "AI" : "User"}: ${msg.content}`
+          )
+          .join("\n\n");
 
         const aiFeedback = generateSimpleFeedback(msgs);
         const score = calculateScore(msgs);
@@ -93,12 +115,12 @@ Keep practicing to improve your interview skills!`;
         console.log("Sending data to API:", {
           transcriptPreview: transcript.substring(0, 100),
           score,
-          sessionId
+          sessionId,
         });
 
         const response = await fetch(`/api/candidate/interview/${sessionId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             vapiCallId: callId || `call_${Date.now()}`,
             transcript,
@@ -109,24 +131,24 @@ Keep practicing to improve your interview skills!`;
 
         // Check if response has content before parsing
         const text = await response.text();
-        console.log('API Response status:', response.status);
-        console.log('API Response text:', text);
+        console.log("API Response status:", response.status);
+        console.log("API Response text:", text);
 
         let result;
         try {
           result = text ? JSON.parse(text) : {};
         } catch (e) {
-          console.error('Failed to parse response:', e);
-          result = { error: 'Invalid JSON response' };
+          console.error("Failed to parse response:", e);
+          result = { error: "Invalid JSON response" };
         }
 
-        console.log('Interview data save response:', result);
+        console.log("Interview data save response:", result);
 
         if (!response.ok) {
-          console.error('Failed to save interview data:', result);
+          console.error("Failed to save interview data:", result);
         }
       } catch (error) {
-        console.error('Error saving interview data:', error);
+        console.error("Error saving interview data:", error);
       }
     };
     const handleCallStart = () => {
@@ -202,7 +224,7 @@ Keep practicing to improve your interview skills!`;
         .off("message", handleMessage)
         .off("error", handleError);
     };
-  }, [sessionId, messages, vapiCallId, redirectOnEnd, router, ]);
+  }, [sessionId, messages, vapiCallId, redirectOnEnd, router]);
 
   const toggleCall = async () => {
     if (callActive) vapi.stop();
@@ -258,7 +280,9 @@ Keep practicing to improve your interview skills!`;
                       }`}
                       style={{
                         animationDelay: `${i * 0.1}s`,
-                        height: isSpeaking ? `${Math.random() * 50 + 20}%` : "5%",
+                        height: isSpeaking
+                          ? `${Math.random() * 50 + 20}%`
+                          : "5%",
                       }}
                     />
                   ))}
@@ -330,10 +354,12 @@ Keep practicing to improve your interview skills!`;
               {/* USER IMAGE */}
               <div className="relative size-24 mb-4 rounded-full overflow-hidden border-2 border-border">
                 {user?.imageUrl ? (
-                  <img
+                  <Image
                     src={user.imageUrl}
                     alt="User avatar"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">

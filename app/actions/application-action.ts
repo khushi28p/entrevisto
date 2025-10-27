@@ -6,12 +6,12 @@ import { ApplicationStatus } from '@prisma/client';
 import nodemailer from 'nodemailer';
 import { revalidatePath } from 'next/cache';
 
-// Create Gmail transporter
+// gmail transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.GMAIL_USER, // Your Gmail address
-    pass: process.env.GMAIL_APP_PASSWORD, // App password (NOT your regular Gmail password)
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD, // app password
   },
 });
 
@@ -145,4 +145,4 @@ export async function updateApplicationStatus(
       success: false, 
       error: 'Failed to update application status. Please try again.' 
     };
-  }
+  }}

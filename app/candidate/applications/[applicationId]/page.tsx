@@ -62,7 +62,7 @@ export default async function ApplicationDetailsPage({ params }: PageProps) {
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Application Not Found</h1>
-          <p className="text-muted-foreground">The application you're looking for doesn't exist.</p>
+          <p className="text-muted-foreground">The application you&apos;re looking for doesn&apos;t exist.</p>
           <a
             href="/candidate/dashboard"
             className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
@@ -80,7 +80,7 @@ export default async function ApplicationDetailsPage({ params }: PageProps) {
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Access Denied</h1>
-          <p className="text-muted-foreground">You don't have permission to view this application.</p>
+          <p className="text-muted-foreground">You don&apos;t have permission to view this application.</p>
           <a
             href="/candidate/dashboard"
             className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
@@ -276,16 +276,16 @@ export default async function ApplicationDetailsPage({ params }: PageProps) {
           <h2 className="text-xl font-bold text-foreground mb-4">Next Steps</h2>
           <div className="text-sm text-muted-foreground space-y-2">
             {application.status === "AI_SCREENING_COMPLETE" && (
-              <p>Your application is being reviewed by the recruiting team. You'll be notified of any updates.</p>
+              <p>Your application is being reviewed by the recruiting team. You&apos;ll be notified of any updates.</p>
             )}
             {application.status === "REVIEWED_BY_RECRUITER" && (
-              <p>Your application has been reviewed. The team will reach out if you're selected for the next round.</p>
+              <p>Your application has been reviewed. The team will reach out if you&apos;re selected for the next round.</p>
             )}
             {application.status === "OFFERED" && (
-              <p className="text-green-600 font-semibold">Congratulations! You've received an offer. Check your email for details.</p>
+              <p className="text-green-600 font-semibold">Congratulations! You&apos;ve received an offer. Check your email for details.</p>
             )}
             {application.status === "REJECTED" && (
-              <p>Thank you for your interest. While we've decided to move forward with other candidates for this position, we encourage you to apply for other opportunities.</p>
+              <p>Thank you for your interest. While we&apos;ve decided to move forward with other candidates for this position, we encourage you to apply for other opportunities.</p>
             )}
           </div>
         </div>

@@ -9,7 +9,7 @@ const MAX_FILE_SIZE_MB = 5;
 
 async function parsePdfToText(buffer: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {
-    const pdfParser = new PDFParser(null, 1); // null, 1 for better text extraction
+    const pdfParser = new PDFParser(); // null, 1 for better text extraction
 
     pdfParser.on("pdfParser_dataError", () => {
       reject(new Error("Failed to parse PDF"));

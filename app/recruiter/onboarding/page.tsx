@@ -1,11 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2, Briefcase, Globe, Info, Factory } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 
-// Reusable Button component (using custom theme classes)
+// Reusable Button component
 const ThemeButton = ({ children, onClick, disabled, loading, className = '' }: { 
     children: React.ReactNode, 
     onClick: () => void, 
@@ -58,15 +58,14 @@ const FormInput = ({ label, id, value, onChange, placeholder, icon: Icon, type =
                 className="w-full p-3 border border-border rounded-md bg-input text-foreground focus:ring-2 focus:ring-ring transition-colors focus:border-primary/50"
              />
         )}
-       
     </div>
 );
 
-
 export default function RecruiterOnboardingPage() {
   const router = useRouter();
-  const { isLoaded} = useUser();
+  const { isLoaded } = useUser();
   const [loading, setLoading] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     companyName: '',
@@ -75,6 +74,34 @@ export default function RecruiterOnboardingPage() {
     companyDescription: '',
   });
 
+  // Check if recruiter has already completed onboarding
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      if (!isLoaded) return;
+
+      try {
+        const response = await fetch('/api/recruiter/onboarding-status');
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // If onboarding is complete, redirect to dashboard
+          if (data.isComplete) {
+            router.push('/recruiter/dashboard');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+        // Continue to show onboarding form if check fails
+      } finally {
+        setCheckingStatus(false);
+      }
+    };
+
+    checkOnboardingStatus();
+  }, [isLoaded, router]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
@@ -82,17 +109,6 @@ export default function RecruiterOnboardingPage() {
     });
   };
 
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-  
-  // NOTE: If you need to enforce RECRUITER role access, you would add logic here
-  // to redirect if the user's role in the DB/publicMetadata is not RECRUITER.
-  
   const handleSubmit = async () => {
     setError(null);
     setLoading(true);
@@ -109,13 +125,26 @@ export default function RecruiterOnboardingPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          companyName: formData.companyName,
+          companyIndustry: formData.companyIndustry,
+          companyWebsite: formData.companyWebsite,
+          companyDescription: formData.companyDescription,
+        }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        // Handle server-side errors, including validation failures from the API
-        const errorData = await response.json().catch(() => ({ message: 'Failed to onboard recruiter.' }));
-        setError(errorData.message || response.statusText);
+        // Handle server-side errors
+        setError(data.message || 'Failed to onboard recruiter.');
+        setLoading(false);
+        return;
+      }
+      
+      // Check for success flag from your API
+      if (!data.success) {
+        setError(data.message || 'Onboarding failed.');
         setLoading(false);
         return;
       }
@@ -131,6 +160,15 @@ export default function RecruiterOnboardingPage() {
     }
   };
 
+  // Show loading state while checking onboarding status or auth
+  if (!isLoaded || checkingStatus) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen p-4 sm:p-8 bg-background text-foreground font-sans">
       
@@ -142,7 +180,7 @@ export default function RecruiterOnboardingPage() {
             Recruiter Onboarding
           </h1>
           <p className="mt-2 text-md text-muted-foreground">
-            Tell us about your company to start posting jobs. This step links your profile to a *Company* entity.
+            Tell us about your company to start posting jobs. This step links your profile to a Company entity.
           </p>
         </header>
 

@@ -21,7 +21,7 @@ const StatCard = ({
   value,
   color = "text-primary",
 }: {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string | number;
   color?: string;

@@ -40,6 +40,7 @@ export function ApplicationActionButtons({ applicationId }: { applicationId: str
         type: 'error',
         text: 'An unexpected error occurred'
       });
+      console.error('Status Update Error:', error);
     } finally {
       setLoading(false);
     }

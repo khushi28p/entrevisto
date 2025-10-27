@@ -112,30 +112,30 @@ export default async function RecruiterDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-8 font-sans">
-      <div className="max-w-6xl mx-auto space-y-10">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         
         {/* Header and Welcome */}
-        <header className="pt-8">
+        <header className="border-b border-border/80 pb-6 mb-8">
           <h1 className="text-4xl font-serif font-extrabold tracking-tight text-foreground">
-            Welcome back, {user.email}!
+            Welcome back!
           </h1>
-          <div className="flex items-center text-muted-foreground mt-1 space-x-2">
+          <div className="flex items-center text-muted-foreground mt-2 space-x-2">
              <Building className="h-5 w-5" />
              <p className="text-lg font-medium">{company.name} Dashboard</p>
           </div>
         </header>
         
         {/* Metric Cards Overview */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {metricsData.map((metric) => (
             <MetricCard key={metric.title} {...metric} />
           ))}
         </section>
         
         {/* Job Postings Management */}
-        <section className="bg-card border border-border rounded-xl p-6 shadow-2xl space-y-6">
-          <div className="flex justify-between items-center border-b border-border/80 pb-4">
+        <section className="bg-card border border-border rounded-xl p-6 shadow-2xl">
+          <div className="flex justify-between items-center border-b border-border/80 pb-4 mb-6">
             <h2 className="text-2xl font-serif font-bold text-secondary-foreground">
               Your Job Postings ({jobPostings.length})
             </h2>

@@ -13,7 +13,10 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Download
+  Download,
+  View,
+  ViewIcon,
+  Eye
 } from "lucide-react";
 import { ApplicationActionButtons } from "@/components/application-action-buttons";
 
@@ -122,8 +125,8 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
 
   if (!application) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-        <div className="text-center space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <h1 className="text-2xl font-bold text-destructive">Application Not Found</h1>
           <p className="text-muted-foreground">The application you're looking for doesn't exist.</p>
           <Link
@@ -146,11 +149,11 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
   const isProcessed = application.status === 'OFFERED' || application.status === 'REJECTED';
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-8">
-      <div className="max-w-6xl mx-auto space-y-8 pt-8">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="space-y-4">
+        <div className="space-y-4 mb-8">
           <Link
             href={`/recruiter/jobs/${application.jobPostingId}`}
             className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -213,8 +216,8 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                     rel="noopener noreferrer"
                     className="flex items-center justify-center space-x-2 w-full py-2 px-4 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors"
                   >
-                    <Download className="h-4 w-4" />
-                    <span className="text-sm font-medium">Download Resume</span>
+                    <Eye className="h-4 w-4" />
+                    <span className="text-sm font-medium">View Resume</span>
                   </a>
                 </div>
               )}
@@ -238,7 +241,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                     <TrendingUp className="h-5 w-5" />
                     <span>AI Evaluation</span>
                   </h2>
-                  <div className="prose prose-sm max-w-none text-secondary-foreground whitespace-pre-wrap leading-relaxed">
+                  <div className="text-secondary-foreground whitespace-pre-wrap leading-relaxed text-sm">
                     {application.interviewResult.aiFeedback}
                   </div>
                 </div>
